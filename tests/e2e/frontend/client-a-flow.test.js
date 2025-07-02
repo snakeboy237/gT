@@ -1,1 +1,1 @@
-// E2E test simulating user flow for client AF
+// E2E test simulating user flow for client AFS
