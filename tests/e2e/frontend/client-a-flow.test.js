@@ -1,0 +1,1 @@
+// E2E test simulating user flow for client A
