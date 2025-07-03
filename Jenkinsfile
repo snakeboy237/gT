@@ -17,11 +17,12 @@ pipeline {
           TAG_NAME = env.GIT_BRANCH.replace("refs/tags/", "")
           echo "Building from tag: ${TAG_NAME}"
 
-          // Example: deploy-client-a-prod
+         
           def parts = TAG_NAME.tokenize('-')
           if (parts.size() == 4) {
             CLIENT = "${parts[1]}-${parts[2]}"
             DEPLOY_ENV = parts[3]
+            
           } else {
             error "Invalid tag format. Use deploy-client-a-prod"
           }
