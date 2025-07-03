@@ -17,9 +17,9 @@ pipeline {
         steps {
             script {
                 def tagParts = env.GIT_TAG.tokenize('-')
-                if (tagParts.size() == 4) {
-                    CLIENT = "${tagParts[0]}-${tagParts[1]}-${tagParts[2]}"
-                    DEPLOY_ENV = "${tagParts[3]}"
+                if (tagParts.size() == 3) {
+                    CLIENT = "${tagParts[0]}-${tagParts[1]}"
+                    DEPLOY_ENV = "${tagParts[2]}"
                 } else {
                     error "Check tag in Commit"
                 }
