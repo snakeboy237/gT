@@ -1,50 +1,38 @@
-// Jenkins pipeline config
 pipeline {
-    agent any
+  agent any
 
-    environment {
-        CLIENT = ""
-        DEPLOY_ENV = ""
+  environment {
+    TAG_NAME = ''
+    CLIENT = ''
+    DEPLOY_ENV = ''
+  }
+
+  stages {
+    stage('Detect Tag') {
+      when {
+        expression { return env.GIT_BRANCH?.startsWith("refs/tags/") }
+      }
+      steps {
+        script {
+          TAG_NAME = env.GIT_BRANCH.replace("refs/tags/", "")
+          echo "Building from tag: ${TAG_NAME}"
+
+          // Example: deploy-client-a-prod
+          def parts = TAG_NAME.tokenize('-')
+          if (parts.size() == 4) {
+            CLIENT = "${parts[1]}-${parts[2]}"
+            DEPLOY_ENV = parts[3]
+          } else {
+            error "Invalid tag format. Use deploy-client-a-prod"
+          }
+
+          echo "Client: ${CLIENT}"
+          echo "Environment: ${DEPLOY_ENV}"
+        }
+      }
     }
 
-    stages {
-
-        stage('Get tag') {
-            when {
-                expression { return env.GIT_TAG != null }
-            }
-        }
-        steps {
-            script {
-                def tagParts = env.GIT_TAG.tokenize('-')
-                if (tagParts.size() == 3) {
-                    CLIENT = "${tagParts[0]}-${tagParts[1]}"
-                    DEPLOY_ENV = "${tagParts[2]}"
-                } else {
-                    error "Check tag in Commit"
-                }
-                echo "Client: ${CLIENT}"
-                echo "Deploy Environment: ${DEPLOY_ENV}"
-            }
-        }
-
-        /*stage('Build') {
-            steps {
-                echo 'Building...'
-            }
-        }
-        stage('Test') {
-            steps {
-                echo 'Testing...'
-            }
-        }
-        stage('Deploy') {
-            steps {
-                echo 'Deploying...'
-            }
-        }*/
-
-        stage('Deploy') {
+    stage('Deploy') {
       when {
         expression { return CLIENT && DEPLOY_ENV }
       }
@@ -53,4 +41,5 @@ pipeline {
         // insert deployment logic here
       }
     }
+  }
 }
