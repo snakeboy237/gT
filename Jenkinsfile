@@ -1,45 +1,39 @@
 pipeline {
   agent any
 
+  triggers {
+    // This only works for regular branches
+    // Tags won't be triggered by this unless detected by a scan
+  }
+
   environment {
-    TAG_NAME = ''
-    CLIENT = ''
-    DEPLOY_ENV = ''
+    TAG_NAME = "${env.GIT_BRANCH}".replace('refs/tags/', '')
   }
 
   stages {
-    stage('Detect Tag') {
+    stage('Tag Check') {
       when {
         expression { return env.GIT_BRANCH?.startsWith("refs/tags/") }
       }
       steps {
+        echo "🔖 This is a tag build: ${env.GIT_BRANCH}"
+        echo "Extracted tag: ${TAG_NAME}"
+
         script {
-          TAG_NAME = env.GIT_BRANCH.replace("refs/tags/", "")
-          echo "Building from tag: ${TAG_NAME}"
-
-         
-          def parts = TAG_NAME.tokenize('-')
-          if (parts.size() == 4) {
-            CLIENT = "${parts[1]}-${parts[2]}"
-            DEPLOY_ENV = parts[3]
-            
-          } else {
-            error "Invalid tag format. Use deploy-client-a-prod"
+          if (!TAG_NAME.startsWith("deploy-")) {
+            error "❌ Tag name does not follow deploy-* format. Aborting."
           }
-
-          echo "Client: ${CLIENT}"
-          echo "Environment: ${DEPLOY_ENV}"
         }
       }
     }
 
     stage('Deploy') {
       when {
-        expression { return CLIENT && DEPLOY_ENV }
+        expression { return env.GIT_BRANCH?.startsWith("refs/tags/deploy-") }
       }
       steps {
-        echo "🚀 Deploying ${CLIENT} to ${DEPLOY_ENV}"
-        // insert deployment logic here
+        echo "🚀 Deploy logic triggered for tag: ${TAG_NAME}"
+        // insert actual deploy logic
       }
     }
   }
