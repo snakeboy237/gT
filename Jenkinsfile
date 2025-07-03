@@ -43,5 +43,14 @@ pipeline {
                 echo 'Deploying...'
             }
         }*/
+
+        stage('Deploy') {
+      when {
+        expression { return CLIENT && DEPLOY_ENV }
+      }
+      steps {
+        echo "🚀 Deploying ${CLIENT} to ${DEPLOY_ENV}"
+        // insert deployment logic here
+      }
     }
 }
